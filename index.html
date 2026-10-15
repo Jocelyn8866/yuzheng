@@ -289,13 +289,13 @@ h1{font-size:clamp(24px,7vw,34px);word-break:keep-all}
 @media (max-width:420px){h2{font-size:20px}.tab{font-size:13px;padding:7px 10px}}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--bg);position:relative;font-family:var(--f-body)}
-body::before{content:"";position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;z-index:-1;pointer-events:none;
+body::before{content:"";position:fixed;top:-20vh;bottom:-20vh;left:-10vw;right:-10vw;z-index:-1;pointer-events:none;
   background:
-    linear-gradient(180deg, var(--bg) 0, transparent 16%, transparent 58%, var(--bg) 90%),
-    radial-gradient(40vmax 40vmax at 12% 22%, var(--blob1) 0, transparent 60%),
-    radial-gradient(38vmax 38vmax at 92% 18%, var(--blob2) 0, transparent 60%),
-    radial-gradient(42vmax 42vmax at 80% 55%, var(--blob3) 0, transparent 62%),
-    radial-gradient(36vmax 36vmax at 8% 62%, var(--blob4) 0, transparent 60%),
+    linear-gradient(180deg, var(--bg) 0, var(--bg) 14%, transparent 28%, transparent 58%, var(--bg) 76%, var(--bg) 100%),
+    radial-gradient(40vmax 40vmax at 14% 30%, var(--blob1) 0, transparent 60%),
+    radial-gradient(38vmax 38vmax at 88% 27%, var(--blob2) 0, transparent 60%),
+    radial-gradient(42vmax 42vmax at 78% 52%, var(--blob3) 0, transparent 62%),
+    radial-gradient(36vmax 36vmax at 12% 57%, var(--blob4) 0, transparent 60%),
     var(--bg);}
 .list,.tbl,.gantt-wrap,.gate,.note,.mat-pop{background:var(--glass)!important;border:1px solid var(--glass-edge)!important;box-shadow:var(--glass-shadow);-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
 .alert{background:var(--seal-soft);border:1px solid var(--glass-edge);-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);box-shadow:var(--glass-shadow)}
