@@ -421,6 +421,17 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
 .subtab:focus-visible{outline:2px solid var(--net);outline-offset:2px}
 .todo-page{display:contents}
 .todo-page[hidden]{display:none}
+/* 倒數：數字和「天」同一行；依狀態變色 */
+.alert{cursor:pointer}
+.alert .num{display:flex;align-items:baseline;justify-content:center;gap:2px;white-space:nowrap;min-width:3.2ch;font-size:34px}
+.alert .num small{display:inline;font-size:15px;margin:0;font-weight:600}
+.alert p b{display:block;margin-bottom:2px}
+.alert p .go{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
+.alert.over .num{color:var(--seal)}
+.alert.done{background:var(--ok-soft)}
+.alert.done .num{color:var(--ok)}
+.task.flash{animation:yzflash 1.6s ease}
+@keyframes yzflash{0%,60%{background:var(--net-soft)}100%{background:transparent}}
 </style>
 <script>
 (function(){
@@ -461,8 +472,8 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
     <header style="margin-bottom:28px">
       <div class="who-bar">目前身分：<select id="meSel" class="me-sel" aria-label="切換身分"></select>　<button type="button" id="logout">登出</button></div>
       <div class="alert" id="alert">
-        <div class="num" id="days">–<small>天</small></div>
-        <p><b>距 10/23（五）CTP 首次申報期限。</b>資料收齊就可以先辦，越早越好。</p>
+        <div class="num" id="days">–</div>
+        <p id="alertText"></p>
       </div>
       <div class="progress">
         <span>準備資料</span><div class="bar"><i id="barPrep"></i></div><span class="n" id="cntPrep">0/0</span>
@@ -518,19 +529,38 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
     var cp=$('cnt-prep'),ct=$('cnt-todo');
     if(cp) cp.textContent=prep.filter(function(b){return b.checked}).length+'/'+prep.length;
     if(ct) ct.textContent=task.filter(function(b){return b.checked}).length+'/'+task.length;
-    todoCounts();
+    todoCounts(); countdown();
   }
 
+  /* 最緊急任務：依時程表找出最早要完成、還沒勾完的事項 */
+  function todayTP(){ var now=new Date(); var tp=new Date(now.getTime()+(now.getTimezoneOffset()+480)*60000); return Date.UTC(tp.getFullYear(),tp.getMonth(),tp.getDate()); }
+  function md(ms){ var d=new Date(ms); return (d.getUTCMonth()+1)+'/'+d.getUTCDate()+'（'+'日一二三四五六'.charAt(d.getUTCDay())+'）'; }
+  var urgentTarget=null;
   function countdown(){
-    var now=new Date();
-    var tp=new Date(now.getTime()+(now.getTimezoneOffset()+480)*60000);
-    var today=Date.UTC(tp.getFullYear(),tp.getMonth(),tp.getDate());
-    var d=Math.round((Date.UTC(2026,9,23)-today)/86400000);
-    var el=$('days');
-    if(d>=0){el.firstChild.nodeValue=String(d)}
-    else{$('alert').querySelector('p').innerHTML='<b>CTP 首次申報期限 10/23 已過。</b>還沒申報的話請盡快補辦。';el.firstChild.nodeValue='!'}
+    var g=document.getElementById('gantt'), el=$('days'), txt=$('alertText'), box=$('alert'); if(!el||!txt) return;
+    var today=todayTP(), best=null;
+    if(g) [].slice.call(g.querySelectorAll('.g-row[data-ids]')).forEach(function(r){
+      var ids=r.getAttribute('data-ids').split(','), cbs=ids.map(function(id){return document.getElementById(id)}).filter(Boolean);
+      var left=cbs.filter(function(b){return !b.checked}); if(!cbs.length||!left.length) return;
+      var bars=r.querySelectorAll('.g-bar'); if(!bars.length) return;
+      var lb=bars[bars.length-1], due=gday(lb.getAttribute('data-e')||lb.getAttribute('data-s'));
+      var dl=r.querySelector('.g-dl');
+      if(!best||due<best.due) best={due:due,ids:ids,left:left,row:r,legal:dl?gday(dl.getAttribute('data-d')):null};
+    });
+    box.classList.remove('over','done');
+    if(!best){ el.innerHTML='✓'; box.classList.add('done'); txt.innerHTML='<b>排定的事項都完成了。</b>剩下「遇到才做」和「每年固定」的項目，時間到再處理。'; urgentTarget=null; return; }
+    var d=Math.round((best.due-today)/864e5), isPrep=best.ids[0].charAt(0)==='p', title;
+    if(isPrep) title='收齊準備材料';
+    else { var t=best.left[0].parentNode.querySelector('.ttl strong')||best.left[0].parentNode.querySelector('strong'); title=t?t.textContent:best.row.querySelector('.g-label').textContent; }
+    if(d>0) el.innerHTML=d+'<small>天</small>';
+    else if(d===0) el.innerHTML='今天';
+    else { el.innerHTML=(-d)+'<small>天前</small>'; box.classList.add('over'); }
+    var when=d<0?'已過預定日 '+md(best.due):(d===0?'今天':md(best.due)+'前');
+    var more=isPrep?('還有 '+best.left.length+' 項材料沒備妥。'):'';
+    if(best.legal) more+='法定期限 '+md(best.legal)+(best.legal<today?'，已經過了，請盡快補辦。':'。');
+    txt.innerHTML='<b>'+when+'：'+title+'</b>'+more+'<span class="go">點這裡查看 →</span>';
+    urgentTarget={tab:isPrep?'prep':'todo', id:best.left[0].id};
   }
-
   function gday(s){var p=s.split('-');return Date.UTC(+p[0],+p[1]-1,+p[2])}
   var G0=gday('2026-10-15'), GN=Math.round((gday('2026-12-01')-G0)/864e5);
   function gpos(s){return (gday(s)-G0)/864e5/GN*100}
@@ -711,6 +741,13 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
     showTodoPage(start);
     if(window.__lgSetup) window.__lgSetup(nav);
   }
+
+  $('alert').addEventListener('click',function(){
+    if(!urgentTarget) return; showTab(urgentTarget.tab,false);
+    var cb=document.getElementById(urgentTarget.id); if(!cb) return;
+    todoPages.forEach(function(pg,i){ if(pg.contains(cb)) showTodoPage(i); });
+    var row=cb.closest('.task')||cb; setTimeout(function(){ try{row.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){row.scrollIntoView()} row.classList.add('flash'); setTimeout(function(){row.classList.remove('flash')},1600); },60);
+  });
 
   function setupMatLinks(){
     var mats={};
