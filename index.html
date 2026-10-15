@@ -7,7 +7,8 @@
 <title>昱錚企業開業待辦</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" id="themeColor" content="#ECEAE6">
+<meta name="theme-color" content="#ECEAE6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A09" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -452,6 +453,16 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
   setInterval(apply,3000);
 })();
 </script>
+<script>
+/* 讓 Safari 頂端／底端（含往上滑時露出的區域）顏色跟著深淺色走 */
+(function(){
+  var d=document.documentElement;
+  function dark(){ var e=d.getAttribute('data-eff'); return e? e==='dark' : (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches); }
+  function upd(){ var c=dark()?'#0A0A09':'#ECEAE6'; [].slice.call(document.querySelectorAll('meta[name="theme-color"]')).forEach(function(m){ m.setAttribute('content',c); }); d.style.backgroundColor=c; }
+  upd(); new MutationObserver(upd).observe(d,{attributes:true,attributeFilter:['data-eff']});
+  if(window.matchMedia){ var q=matchMedia('(prefers-color-scheme: dark)'); if(q.addEventListener) q.addEventListener('change',upd); }
+})();
+</script>
 </head>
 <body class="locked">
 <div class="wrap">
@@ -884,16 +895,6 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
   function init(){ setup(document.querySelector('.theme-sw')); setup(document.getElementById('tabs')); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
   setTimeout(init,500);
-})();
-</script>
-<script>
- 
-(function(){
-  var d=document.documentElement, m=document.getElementById('themeColor');
-  function dark(){ var e=d.getAttribute('data-eff'); return e? e==='dark' : (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches); }
-  function upd(){ if(m) m.setAttribute('content', dark()? '#0A0A09' : '#ECEAE6'); }
-  upd(); new MutationObserver(upd).observe(d,{attributes:true,attributeFilter:['data-eff']});
-  if(window.matchMedia){ var q=matchMedia('(prefers-color-scheme: dark)'); if(q.addEventListener) q.addEventListener('change',upd); }
 })();
 </script>
 </body>
