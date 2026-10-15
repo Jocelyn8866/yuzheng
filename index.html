@@ -421,6 +421,7 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
 .subtab:focus-visible{outline:2px solid var(--net);outline-offset:2px}
 .todo-page{display:contents}
 .todo-page[hidden]{display:none}
+.todo-off{display:none!important}
 /* 倒數：數字和「天」同一行；依狀態變色 */
 .alert{cursor:pointer}
 .alert .num{display:flex;align-items:baseline;justify-content:center;gap:2px;white-space:nowrap;min-width:3.2ch;font-size:34px}
@@ -710,30 +711,37 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
     });
   }
   function showTodoPage(i){
-    todoPages.forEach(function(pg,k){ pg.hidden=(k!==i); });
+    todoPages.forEach(function(pg,k){ pg.classList.toggle('todo-off',k!==i); });
     todoBtns.forEach(function(b,k){ var on=k===i; b.classList.toggle('on',on); b.setAttribute('aria-selected',on?'true':'false'); });
     var o=load(); o.todoPage=i; store(o);
   }
   function setupTodoPages(){
     todoPages=[]; todoBtns=[];
-    var sec=document.querySelector('section[data-tab="todo"]'); if(!sec) return;
-    var hs=[].slice.call(sec.children).filter(function(n){return n.nodeName==='H2'}); if(hs.length<2) return;
-    hs.forEach(function(h,i){
-      var pg=document.createElement('div'); pg.className='todo-page'; pg.setAttribute('role','tabpanel');
-      sec.insertBefore(pg,h);
-      var n=h; do{ var nx=n.nextSibling; pg.appendChild(n); n=nx; } while(n && n.nodeName!=='H2');
-      todoPages.push(pg);
-    });
-    var nav=document.createElement('div'); nav.className='subtabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','依時間分頁');
-    hs.forEach(function(h,i){
-      var sp=h.querySelector('span'), full=h.textContent.replace(sp?sp.textContent:'','').trim();
+    var secs=[].slice.call(document.querySelectorAll('#content section[data-tab="todo"]')); if(!secs.length) return;
+    if(secs.length>1){
+      todoPages=secs.filter(function(x){return x.querySelector('h2')});
+    } else {
+      var sec=secs[0], hs=[].slice.call(sec.children).filter(function(n){return n.nodeName==='H2'}); if(hs.length<2) return;
+      hs.forEach(function(h){
+        var pg=document.createElement('div'); pg.className='todo-page';
+        sec.insertBefore(pg,h);
+        var n=h; do{ var nx=n.nextSibling; pg.appendChild(n); n=nx; } while(n && n.nodeName!=='H2');
+        todoPages.push(pg);
+      });
+    }
+    if(todoPages.length<2) return;
+    var nav=document.createElement('div'); nav.className='subtabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','依時間分頁'); nav.setAttribute('data-tab','todo');
+    todoPages.forEach(function(pg,i){
+      pg.setAttribute('role','tabpanel');
+      var h=pg.querySelector('h2'), sp=h.querySelector('span'), full=h.textContent.replace(sp?sp.textContent:'','').trim();
       var main=full.split('　')[0].trim();
       var b=document.createElement('button'); b.type='button'; b.className='subtab'; b.setAttribute('role','tab');
       b.innerHTML='<span class="sm"></span><span class="sc"></span>'; b.querySelector('.sm').textContent=main;
       b.addEventListener('click',function(){ showTodoPage(i); });
       nav.appendChild(b); todoBtns.push(b);
     });
-    sec.insertBefore(nav,todoPages[0]);
+    todoPages[0].parentNode.insertBefore(nav,todoPages[0]);
+    nav.hidden=todoPages[0].hidden;
     todoCounts();
     var saved=load().todoPage, start=0;
     if(typeof saved==='number'&&saved>=0&&saved<todoPages.length) start=saved;
