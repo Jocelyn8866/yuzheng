@@ -373,6 +373,21 @@ body.locked #hTitle{align-items:center}
 .t-main{font-size:clamp(44px,13vw,60px);font-weight:700;line-height:1.08;letter-spacing:.04em}
 .t-sub{font-size:clamp(15px,4.4vw,19px);font-weight:300;line-height:1.3;letter-spacing:.24em;opacity:.55}
 body:not(.locked) .t-main{font-size:clamp(28px,8vw,40px);letter-spacing:.02em}
+/* 上一頁／下一頁永遠同一列 */
+.pager{flex-wrap:nowrap;align-items:stretch}
+.pager button{flex:0 1 calc(50% - 6px);min-width:0;font-size:clamp(13px,3.7vw,16px);padding:12px 10px;line-height:1.25;text-align:center}
+/* 表格在手機上不用左右滑 */
+@media (max-width:600px){
+  .tbl{overflow-x:visible}
+  .tbl table{min-width:0;font-size:14px}
+  .tbl th,.tbl td{white-space:normal;padding:9px 7px;word-break:keep-all;overflow-wrap:anywhere}
+  .tbl th:first-child,.tbl td:first-child{padding-left:12px}
+  .tbl th:last-child,.tbl td:last-child{padding-right:12px}
+  .tbl .r{white-space:nowrap}
+}
+/* 日期欄位不超出卡片 */
+.info-form input,.info-form select{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.info-form input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-height:44px}
 </style>
 <script>
 (function(){
