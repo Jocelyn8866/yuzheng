@@ -407,6 +407,20 @@ details.mat summary{flex-wrap:nowrap;align-items:flex-start;gap:0}
 details.mat summary .no{flex:none;margin-top:2px}
 details.mat summary strong{flex:1 1 auto;min-width:0;line-height:1.45}
 details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
+/* 待辦事項的時間分頁 */
+.subtabs{display:flex;gap:2px;padding:4px;margin:0 0 6px;border-radius:999px;position:relative;
+  background:linear-gradient(180deg,var(--lg-b),transparent),var(--glass-strong);
+  box-shadow:inset 0 1px 0 var(--lg-edge),inset 0 0 0 .5px var(--lg-edge),0 4px 16px -8px rgba(0,0,0,.18);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%)}
+.subtab{flex:1 1 0;min-width:0;font:inherit;border:0;background:transparent;color:var(--fg);cursor:pointer;position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 4px;border-radius:999px;line-height:1.2;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.subtab .sm{font-size:clamp(12.5px,3.5vw,15px);font-weight:600;white-space:nowrap}
+.subtab .sc{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.subtab:not(.on){opacity:.72}
+.subtab.all-done .sc{color:var(--ok)}
+.subtab:focus-visible{outline:2px solid var(--net);outline-offset:2px}
+.todo-page{display:contents}
+.todo-page[hidden]{display:none}
 </style>
 <script>
 (function(){
@@ -504,6 +518,7 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
     var cp=$('cnt-prep'),ct=$('cnt-todo');
     if(cp) cp.textContent=prep.filter(function(b){return b.checked}).length+'/'+prep.length;
     if(ct) ct.textContent=task.filter(function(b){return b.checked}).length+'/'+task.length;
+    todoCounts();
   }
 
   function countdown(){
@@ -655,6 +670,48 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
     showTab(ok?saved:'plan',false);
   }
 
+  /* 待辦事項依時間分頁 */
+  var todoPages=[], todoBtns=[];
+  function todoCounts(){
+    todoPages.forEach(function(pg,i){
+      var cb=[].slice.call(pg.querySelectorAll('input[type=checkbox]')), d=cb.filter(function(b){return b.checked}).length;
+      var c=todoBtns[i]&&todoBtns[i].querySelector('.sc'); if(c) c.textContent=cb.length?(d+'/'+cb.length):'—';
+      if(todoBtns[i]) todoBtns[i].classList.toggle('all-done',cb.length>0&&d===cb.length);
+    });
+  }
+  function showTodoPage(i){
+    todoPages.forEach(function(pg,k){ pg.hidden=(k!==i); });
+    todoBtns.forEach(function(b,k){ var on=k===i; b.classList.toggle('on',on); b.setAttribute('aria-selected',on?'true':'false'); });
+    var o=load(); o.todoPage=i; store(o);
+  }
+  function setupTodoPages(){
+    todoPages=[]; todoBtns=[];
+    var sec=document.querySelector('section[data-tab="todo"]'); if(!sec) return;
+    var hs=[].slice.call(sec.children).filter(function(n){return n.nodeName==='H2'}); if(hs.length<2) return;
+    hs.forEach(function(h,i){
+      var pg=document.createElement('div'); pg.className='todo-page'; pg.setAttribute('role','tabpanel');
+      sec.insertBefore(pg,h);
+      var n=h; do{ var nx=n.nextSibling; pg.appendChild(n); n=nx; } while(n && n.nodeName!=='H2');
+      todoPages.push(pg);
+    });
+    var nav=document.createElement('div'); nav.className='subtabs'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','依時間分頁');
+    hs.forEach(function(h,i){
+      var sp=h.querySelector('span'), full=h.textContent.replace(sp?sp.textContent:'','').trim();
+      var main=full.split('　')[0].trim();
+      var b=document.createElement('button'); b.type='button'; b.className='subtab'; b.setAttribute('role','tab');
+      b.innerHTML='<span class="sm"></span><span class="sc"></span>'; b.querySelector('.sm').textContent=main;
+      b.addEventListener('click',function(){ showTodoPage(i); });
+      nav.appendChild(b); todoBtns.push(b);
+    });
+    sec.insertBefore(nav,todoPages[0]);
+    todoCounts();
+    var saved=load().todoPage, start=0;
+    if(typeof saved==='number'&&saved>=0&&saved<todoPages.length) start=saved;
+    else { for(var k=0;k<todoPages.length;k++){ if([].slice.call(todoPages[k].querySelectorAll('input[type=checkbox]')).some(function(b){return !b.checked})){start=k;break;} } }
+    showTodoPage(start);
+    if(window.__lgSetup) window.__lgSetup(nav);
+  }
+
   function setupMatLinks(){
     var mats={};
     [].slice.call(document.querySelectorAll('.task.prep')).forEach(function(el){
@@ -684,7 +741,7 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
   }
 
   function mount(html){
-    $('content').innerHTML=html; applySiteData(); buildGantt(); markMe(); setupTabs(); setupInfo(); setupView(); setupMatLinks();
+    $('content').innerHTML=html; applySiteData(); buildGantt(); markMe(); setupTabs(); setupTodoPages(); setupInfo(); setupView(); setupMatLinks();
     prep=[].slice.call(document.querySelectorAll('[data-group="prep"] input'));
     task=[].slice.call(document.querySelectorAll('[data-group="task"] input'));
     boxes=prep.concat(task);
@@ -778,6 +835,7 @@ details.mat summary .more{flex:none;margin-left:10px;margin-top:2px}
     ['pointerup','pointercancel','pointerleave'].forEach(function(n){ box.addEventListener(n,up); });
     place();
   }
+  window.__lgSetup=setup;
   function init(){ setup(document.querySelector('.theme-sw')); setup(document.getElementById('tabs')); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
   setTimeout(init,500);
