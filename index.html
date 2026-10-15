@@ -389,6 +389,17 @@ body:not(.locked) .t-main{font-size:clamp(28px,8vw,40px);letter-spacing:.02em}
 /* 日期欄位不超出卡片 */
 .info-form input,.info-form select{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
 .info-form input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-height:44px}
+/* 上一頁／下一頁：統一的液態玻璃膠囊 */
+.pager button,.pager button.next{display:flex;align-items:center;justify-content:center;height:50px;padding:0 10px!important;
+  font-size:clamp(13px,3.6vw,16px)!important;font-weight:600!important;color:var(--fg)!important;border:0!important;
+  background:linear-gradient(180deg,var(--lg-a),var(--lg-b)),var(--glass-strong)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(180%);backdrop-filter:blur(18px) saturate(180%);
+  box-shadow:inset 0 1px 0 var(--lg-hi),inset 0 -1px 0 var(--lg-lo),inset 0 0 0 .5px var(--lg-edge),var(--lg-sh)!important}
+.pager button::before{opacity:.7!important}
+:root[data-eff="dark"] .pager button::before{opacity:.25!important}
+@media (prefers-color-scheme:dark){:root:not([data-eff]) .pager button::before{opacity:.25!important}}
+/* 數字欄：標題和數字置中對齊 */
+.tbl th.r,.tbl td.r{text-align:center;font-variant-numeric:tabular-nums}
 </style>
 <script>
 (function(){
