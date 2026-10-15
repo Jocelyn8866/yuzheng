@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="昱錚待辦">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto&#43;Sans&#43;TC:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&amp;display=swap">
 <style>
 :root{
   --bg:#ECEAE6; --surface:rgba(255,255,255,.72); --fg:#33312E; --muted:#7D7A75; --line:rgba(80,72,64,.16); --line-strong:rgba(80,72,64,.3);
@@ -367,6 +367,12 @@ html{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bot
 /* 登入畫面：標題與密碼欄整組垂直置中 */
 body.locked .wrap{min-height:calc(100vh - 68px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:calc(100svh - 68px - env(safe-area-inset-top) - env(safe-area-inset-bottom));justify-content:center}
 body.locked .gate{margin:0 auto}
+/* 主標題／副標題 */
+#hTitle{display:flex;flex-direction:column;gap:8px;margin:0}
+body.locked #hTitle{align-items:center}
+.t-main{font-size:clamp(44px,13vw,60px);font-weight:700;line-height:1.08;letter-spacing:.04em}
+.t-sub{font-size:clamp(15px,4.4vw,19px);font-weight:300;line-height:1.3;letter-spacing:.24em;opacity:.55}
+body:not(.locked) .t-main{font-size:clamp(28px,8vw,40px);letter-spacing:.02em}
 </style>
 <script>
 (function(){
@@ -391,7 +397,7 @@ body.locked .gate{margin:0 auto}
 <div class="wrap">
   <header>
     <div class="eyebrow" id="hEyebrow"></div>
-    <h1 id="hTitle">昱錚企業<br>開業待辦時程</h1>
+    <h1 id="hTitle"><span class="t-main">昱錚企業</span><span class="t-sub">開業待辦時程</span></h1>
     <div class="meta" id="hMeta"></div>
     <div class="theme-sw" role="group" aria-label="外觀"><button type="button" data-th="auto">自動</button><button type="button" data-th="light">淺色</button><button type="button" data-th="dark">深色</button></div>
   </header>
@@ -670,7 +676,7 @@ body.locked .gate{margin:0 auto}
   function applySiteData(){
     var d=document.getElementById('siteData'); if(!d) return;
     var hd=d.querySelector('[data-h]');
-    if(hd){ $('hEyebrow').innerHTML=hd.querySelector('.eyebrow').innerHTML; $('hTitle').innerHTML=hd.querySelector('h1').innerHTML; $('hMeta').innerHTML=hd.querySelector('.meta').innerHTML; }
+    if(hd){ $('hEyebrow').innerHTML=hd.querySelector('.eyebrow').innerHTML; var tp=hd.querySelector('h1').innerHTML.split(/<br\s*\/?>/i); $('hTitle').innerHTML='<span class="t-main">'+tp[0]+'</span>'+(tp[1]?'<span class="t-sub">'+tp[1]+'</span>':''); $('hMeta').innerHTML=hd.querySelector('.meta').innerHTML; }
     var names=[]; try{ names=JSON.parse(d.getAttribute('data-names')||'[]'); }catch(e){}
     try{ INFO_NAMES=JSON.parse(d.getAttribute('data-shareholders')||'[]'); }catch(e){}
     NHI_NAME=d.getAttribute('data-nhi')||'';
@@ -679,7 +685,7 @@ body.locked .gate{margin:0 auto}
     names.forEach(function(n){ var o=document.createElement('option'); o.textContent=n; o.value=n; sel.appendChild(o); });
     sel.value=me; store({pw:pw,who:me});
   }
-  function clearSiteData(){ $('hEyebrow').innerHTML=''; $('hTitle').innerHTML='昱錚企業<br>開業待辦時程'; $('hMeta').innerHTML=''; $('meSel').innerHTML=''; }
+  function clearSiteData(){ $('hEyebrow').innerHTML=''; $('hTitle').innerHTML='<span class="t-main">昱錚企業</span><span class="t-sub">開業待辦時程</span>'; $('hMeta').innerHTML=''; $('meSel').innerHTML=''; }
   $('meSel').addEventListener('change',function(){ me=$('meSel').value; var o=load(); o.who=me; store(o); markMe(); });
 
   function enter(p,auto){
